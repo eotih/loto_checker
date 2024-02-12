@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "loto_checker",
+    "slug": "lotochecker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs access to your camera to scan loto.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your camera to scan loto."
+      },
+      "bundleIdentifier": "com.eotihvn.lotochecker"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.eotihvn.lotochecker"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d8bcf307-8440-41d7-9f4b-e191a440f8b0"
+      }
+    },
+    "owner": "eotihvn"
+  }
+}
