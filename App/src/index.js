@@ -1,14 +1,14 @@
 import * as React from "react";
-import { BottomNavigation, Text } from "react-native-paper";
+import { BottomNavigation } from "react-native-paper";
 import { LotoScreen, HomeScreen } from "./screens";
 
-const MyComponent = () => {
+const Main = () => {
   const [index, setIndex] = React.useState(0);
   const [routes] = React.useState([
     { key: "homeScreen", title: "Home", focusedIcon: "home" },
     {
       key: "lotoScreen",
-      title: "Lô tô Checker",
+      title: "Dò lô tô",
       focusedIcon: "check",
       unfocusedIcon: "check-outline",
     },
@@ -31,4 +31,4 @@ const MyComponent = () => {
   );
 };
 
-export default MyComponent;
+export default Main;
