@@ -45,7 +45,7 @@ type simpleMessage struct {
 
 func myGetFunction(c *gin.Context) {
 	simpleMessage := simpleMessage{
-		Hello:   "World!!",
+		Hello:   "World!!!",
 		Message: "Subscribe to my channel!",
 	}
 
