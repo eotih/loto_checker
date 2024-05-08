@@ -1,84 +1,76 @@
-import React, { memo } from "react";
+import React, { useState } from "react";
 import {
+  FlatList,
+  SafeAreaView,
   StyleSheet,
   Text,
-  View,
-  FlatList,
-  Dimensions,
-  SafeAreaView,
+  TouchableOpacity,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
-const data = [
-  { key: "A" },
-  { key: "B" },
-  { key: "C" },
-  { key: "D" },
-  { key: "E" },
-  { key: "F" },
-  { key: "G" },
-  { key: "H" },
-  { key: "I" },
-  { key: "J" },
+const DATA = [
+  { id: "phatloc_yellow_FFA630", title: "Phát lộc - Vàng" },
+  { id: "phatloc_purple_AFA2FF", title: "Phát lộc - Tím" },
 ];
 
-const formatData = (data, numColumns) => {
-  const numberOfFullRows = Math.floor(data.length / numColumns);
+const Item = ({ item, onPress, selectedId }) => (
+  <TouchableOpacity
+    key={item.id}
+    onPress={onPress}
+    style={[styles.item, selectedId === item.id && styles.selectedItem]}
+  >
+    <Text style={styles.title}>{item.title}</Text>
+  </TouchableOpacity>
+);
 
-  let numberOfElementsLastRow = data.length - numberOfFullRows * numColumns;
-  while (
-    numberOfElementsLastRow !== numColumns &&
-    numberOfElementsLastRow !== 0
-  ) {
-    data.push({ key: `blank-${numberOfElementsLastRow}`, empty: true });
-    numberOfElementsLastRow++;
-  }
+const App = () => {
+  const navigation = useNavigation();
+  const [selectedId, setSelectedId] = useState(null);
 
-  return data;
-};
-
-const numColumns = 2;
-function HomeScreen() {
-  const renderItem = ({ item, index }) => {
-    if (item.empty === true) {
-      return <View style={[styles.item, styles.itemInvisible]} />;
-    }
-    return (
-      <View style={styles.item}>
-        <Text style={styles.itemText}>{item.key}</Text>
-      </View>
-    );
+  const handleItemPress = (id) => {
+    setSelectedId(id);
+    // Perform additional actions on item press (optional)
+    console.log("Item pressed:", id);
+    navigation.navigate("LotoScreen", { value: id });
   };
 
+  const renderItem = ({ item }) => (
+    <Item
+      item={item}
+      onPress={() => handleItemPress(item.id)}
+      selectedId={selectedId}
+    />
+  );
+
   return (
-    <SafeAreaView style={{ marginTop: 20, flex: 1 }}>
+    <SafeAreaView style={styles.container}>
       <FlatList
-        data={formatData(data, numColumns)}
-        style={styles.container}
+        data={DATA}
         renderItem={renderItem}
-        numColumns={numColumns}
+        keyExtractor={(item) => item.id}
+        extraData={selectedId} // Ensures re-render when selectedId changes
       />
     </SafeAreaView>
   );
-}
-export default memo(HomeScreen);
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginVertical: 20,
+    backgroundColor: "#fff",
   },
   item: {
-    backgroundColor: "#4D243D",
-    alignItems: "center",
-    justifyContent: "center",
-    flex: 1,
-    margin: 1,
-    height: Dimensions.get("window").width / numColumns, // approximate a square
+    padding: 20,
+    marginVertical: 8,
+    marginHorizontal: 16,
+    backgroundColor: "#f9c2ff",
   },
-  itemInvisible: {
-    backgroundColor: "transparent",
+  selectedItem: {
+    backgroundColor: "#6e3b6e",
   },
-  itemText: {
-    color: "#fff",
+  title: {
+    fontSize: 16,
   },
 });
+
+export default App;

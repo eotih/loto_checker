@@ -1,4 +1,4 @@
-import React, { memo, useState, useCallback } from "react";
+import React, { memo, useState, useCallback, useRef, useEffect } from "react";
 import {
   ScrollView,
   View,
@@ -11,32 +11,8 @@ import {
   Dimensions,
   Alert,
 } from "react-native";
-import { TextInput, Button } from "react-native-paper";
-import { Picker } from "@react-native-picker/picker";
+import { Button } from "react-native-paper";
 import lotoData from "../mocks/lotoData.json";
-
-const lotoColorList = [
-  {
-    label: "Phát lộc - Tím",
-    value: "phatloc_purple_AFA2FF",
-  },
-  {
-    label: "Phát lộc - Vàng",
-    value: "phatloc_yellow_FFA630",
-  },
-  // {
-  //   label: "Phát lộc - Xanh dương",
-  //   value: "phatloc_blue_2e5077",
-  // },
-  // {
-  //   label: "Phát lộc - Xanh lá",
-  //   value: "phatloc_blue_7FC29B",
-  // },
-  // {
-  //   label: "Phát lộc - Đỏ",
-  //   value: "phatloc_red_611C35",
-  // },
-];
 
 const { width, height } = Dimensions.get("window");
 const windowWidth = width - 10;
@@ -47,7 +23,7 @@ const rowsNumber = 9;
 const marginAll = 10;
 
 const childWidth = (windowWidth - marginAll) / columnsNumber;
-const childHeight = (windowHeight - marginAll) / rowsNumber / 1.7;
+const childHeight = (windowHeight - marginAll) / rowsNumber / 1.7 + 10;
 
 const generateGridData = (pageData) => {
   return Array.from({ length: rowsNumber }, (_, y) =>
@@ -57,99 +33,74 @@ const generateGridData = (pageData) => {
     }))
   );
 };
-function LotoScreen() {
+function LotoScreen({ route }) {
   const [selectedCells, setSelectedCells] = useState([]);
-  const [lotoColor, setLotoColor] = useState("phatloc_yellow_FFA630");
-  const [inputNumber, setInputNumber] = useState();
+  console.log("🚀 ~ LotoScreen ~ selectedCells:", selectedCells);
+
+  const [dataColor, setdataColor] = useState(route?.params?.value ?? "phatloc_purple_AFA2FF");
+  const scrollViewRef = useRef(null);
 
   const [firstPageData, setFirstPageData] = useState(
-    generateGridData(lotoData[lotoColor.split("_")[1]]?.firstPage)
+    generateGridData(lotoData[dataColor.split("_")[1]]?.firstPage)
   );
   const [secondPageData, setSecondPageData] = useState(
-    generateGridData(lotoData[lotoColor.split("_")[1]]?.firstPage)
+    generateGridData(lotoData[dataColor.split("_")[1]]?.secondPage)
   );
   const keyboardVerticalOffset = Platform.OS === "ios" ? 40 : 0;
 
-  const handleSetLotoData = (lotoColor) => {
-    setLotoColor(lotoColor);
-    const initialInputData = lotoData[lotoColor.split("_")[1]];
-    setSelectedCells([]);
-    setFirstPageData(generateGridData(initialInputData?.firstPage));
-    setSecondPageData(generateGridData(initialInputData?.secondPage));
-  };
-
-  const handleChangeColorLoto = (lotoColor) => {
-    if (selectedCells.length > 0) {
-      Alert.alert("Xác nhận", "Bạn có chắc chắn muốn thay đổi màu lô tô?", [
-        {
-          text: "Hủy",
-          onPress: () => console.log("Cancel Pressed"),
-          style: "cancel",
-        },
-        {
-          text: "Thay đổi",
-          onPress: () => handleSetLotoData(lotoColor),
-        },
-      ]);
-    } else {
-      handleSetLotoData(lotoColor);
-    }
-  };
+  useEffect(() => {
+    setTimeout(function () {
+      scrollViewRef.current?.flashScrollIndicators();
+    }, 500);
+  }, []);
 
   const handleCellPress = useCallback((cellId) => {
     if (cellId === "") return;
-    setSelectedCells((currentSelectedCells) => {
-      if (currentSelectedCells.includes(cellId)) {
-        // Inside or after your handleCellPress function
+    setSelectedCells((currentSelectedCells) =>
+      currentSelectedCells.includes(cellId)
+        ? currentSelectedCells.filter((id) => id !== cellId)
+        : [...currentSelectedCells, cellId]
+    );
+  }, []);
 
-        // If already selected, deselect it
-        return currentSelectedCells.filter((id) => id !== cellId);
-      } else {
-        return [...currentSelectedCells, cellId];
-      }
-    });
-  }, []); // Add dependencies if there are any
-
-  const Grid = memo(({ data, onCellPress }) => (
-    <View style={styles.gridContainer}>
-      {data.map((row, rowIndex) => (
-        <View key={rowIndex} style={styles.row}>
-          {row.map((cell) => (
-            <TouchableOpacity
-              key={cell.id}
-              style={[
-                styles.cell,
-                cell.value === ""
-                  ? { backgroundColor: "#" + lotoColor.split("_")[2] }
-                  : {},
-                selectedCells.includes(cell.value) ? styles.selectedCell : {},
-              ]}
-              onPress={() => onCellPress(cell.value)}
-            >
-              <Text
-                style={[
-                  styles.cellText,
-                  selectedCells.includes(cell.value)
-                    ? styles.selectedCellText
-                    : {},
-                ]}
-              >
-                {cell.value}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      ))}
-    </View>
+  const Cell = memo(({ cellData, isSelected, onCellPress }) => (
+    <TouchableOpacity
+      key={cellData.id}
+      style={[
+        styles.cell,
+        cellData.value === ""
+          ? { backgroundColor: "#" + dataColor.split("_")[2] }
+          : {},
+        isSelected ? styles.selectedCell : {},
+      ]}
+      onPress={() => onCellPress(cellData.value)}
+    >
+      <Text
+        style={[styles.cellText, isSelected ? styles.selectedCellText : {}]}
+      >
+        {cellData.value}
+      </Text>
+    </TouchableOpacity>
   ));
 
-  const handleSubmitInputNumber = (number) => {
-    const isNumberInSelectedCells = selectedCells.includes(number);
-    if (isNumberInSelectedCells) {
-      alert("Số " + number + " đã có trong lô tô");
-    } else {
-      handleCellPress(number);
-    }
+  const Grid = ({ data, onCellPress }) => {
+    console.log("🚀 ~ Grid ~ Grid: render");
+    return (
+      <View style={styles.gridContainer}>
+        {data.map((row, rowIndex) => (
+          <View key={rowIndex} style={styles.row}>
+            {row.map((cell) => (
+              <Cell
+                key={cell.id}
+                cellData={cell}
+                isSelected={selectedCells.includes(cell.value)}
+                onCellPress={onCellPress}
+              />
+            ))}
+          </View>
+        ))}
+      </View>
+    );
   };
 
   const handleClear = () => {
@@ -176,63 +127,20 @@ function LotoScreen() {
         behavior="position"
         keyboardVerticalOffset={keyboardVerticalOffset}
       >
-        <ScrollView>
-          <Picker
-            selectedValue={lotoColor}
-            mode="dropdown"
-            style={{
-              borderColor: "#DFE1E4",
-              borderStyle: "solid",
-              borderWidth: 1,
-              width: "100%",
-              height: 50,
-              marginTop: 12,
-              marginBottom: 16,
-              justifyContent: "center",
-            }}
-            itemStyle={{
-              color: "#394049",
-              letterSpacing: 0.001,
-              fontSize: 14,
-            }}
-            onValueChange={(itemValue, itemIndex) =>
-              handleChangeColorLoto(itemValue)
-            }
+        <ScrollView
+          style={{
+            height: windowHeight - marginAll * 2,
+          }}
+        >
+          <ScrollView
+            horizontal
+            style={styles.scrollView}
+            persistentScrollbar={true}
+            ref={scrollViewRef}
           >
-            {lotoColorList.map((item, index) => (
-              <Picker.Item label={item.label} value={item.value} key={index} />
-            ))}
-          </Picker>
-          <ScrollView horizontal style={styles.scrollView}>
             <Grid data={firstPageData} onCellPress={handleCellPress} />
             <Grid data={secondPageData} onCellPress={handleCellPress} />
           </ScrollView>
-          <View
-            style={{
-              margin: 10,
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignContent: "center",
-              alignItems: "center",
-              alignSelf: "center",
-            }}
-          >
-            <TextInput
-              label="Nhập số cần kiểm tra"
-              value={inputNumber}
-              onChangeText={setInputNumber}
-              style={{ flex: 1, marginRight: 10 }}
-              mode="outlined"
-              keyboardType="numeric"
-            />
-            <Button
-              icon="check"
-              mode="contained"
-              onPress={() => handleSubmitInputNumber(inputNumber)}
-            >
-              Kiểm tra
-            </Button>
-          </View>
           <View
             style={{
               margin: 10,

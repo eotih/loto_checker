@@ -5,7 +5,7 @@ import { LotoScreen, HomeScreen } from "./screens";
 const Main = () => {
   const [index, setIndex] = React.useState(0);
   const [routes] = React.useState([
-    { key: "homeScreen", title: "Home", focusedIcon: "home" },
+    { key: "homeScreen", title: "Phiếu dò", focusedIcon: "home" },
     {
       key: "lotoScreen",
       title: "Dò lô tô",
